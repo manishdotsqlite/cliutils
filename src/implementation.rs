@@ -22,10 +22,24 @@ pub fn cat(filename1: &str, filename2: &str) -> Result<(), &'static str> {
                 Err(_) => return Err("Error reading first file.")
         };
 
-        let newfilename = "concatenated-".to_owned() + filename1 + "-" + filename2;
+        let vec1: Vec<&str> =  filename1.split('/').collect();
+        let vec2: Vec<&str> =  filename2.split('/').collect();
+
+        let actual_filename1 = match vec1.last() {
+                Some(some) => some,
+                None => return Err("Error reading filename.")
+        };
+
+        let actual_filename2 = match vec2.last() {
+                Some(some) => some,
+                None => return Err("Error reading filename.")
+        };
+
+        let newfilename = "src/test/concatenated-".to_owned() + actual_filename1 + "-" + actual_filename2 + ".txt";
+        println!("New file name: {:?}", newfilename);
         let mut newfile = match File::create(newfilename) {
                 Ok(some) => some,
-                Err(_) => return Err("Can't created new file.")
+                Err(_) => return Err("Can't create new file.")
         };
 
         let binding = contents1 + &contents2 ;
@@ -40,7 +54,6 @@ pub fn cat(filename1: &str, filename2: &str) -> Result<(), &'static str> {
 
 pub fn ls(directory: &str) -> Result<(), &'static str>{
         let path = Path::new(directory);
-
         if !path.exists() {
                 return Err("Path doesn't exist.")
         }
@@ -57,9 +70,15 @@ pub fn ls(directory: &str) -> Result<(), &'static str>{
                                 match fs::metadata(&path) {
                                         Ok(some) => {
                                                 if some.is_dir() {
-                                                        println!("Folder: {:?}", path.display())
+                                                        if let Some(s) = path.file_name() {
+                                                                let file_name_string = s.to_string_lossy().into_owned();
+                                                                println!("Folder: {:?}", file_name_string);
+                                                        }       
                                                 } else if some.is_file() {
-                                                        println!("File: {:?}", path.display())
+                                                        if let Some(s) = path.file_name() {
+                                                                let file_name_string = s.to_string_lossy().into_owned();
+                                                                println!("File: {:?}", file_name_string);
+                                                        }
                                                 } else {
                                                         println!("Couldn't read file.")
                                                 }
@@ -79,7 +98,6 @@ pub fn ls(directory: &str) -> Result<(), &'static str>{
 
 pub fn find(directory: &str, filename: &str) -> Result<(), &'static str> {
         let initial_path = Path::new(directory);
-
         if !initial_path.exists() {
                 return Err("Path doesn't exist.")
         }
@@ -122,7 +140,6 @@ pub fn find(directory: &str, filename: &str) -> Result<(), &'static str> {
 
 pub fn grep(directory: &str, text: &str) -> Result<() , &'static str> {
         let initial_path = Path::new(directory);
-
         if !initial_path.exists() {
                 return Err("Path doesn't exist.")
         }
@@ -132,7 +149,7 @@ pub fn grep(directory: &str, text: &str) -> Result<() , &'static str> {
                 Err(_) => return Err("Couldn't read directory.")
         };
 
-        fn check_file(filename: &str, text: &str) -> Result<(), &'static str> {
+        fn check_file(filename: &str, text_chunk: &str) -> Result<(), &'static str> {
                 let file = match File::open(filename) {
                         Ok(some) => some, 
                         Err(_) => return Err("Couldn't open file.")
@@ -143,8 +160,9 @@ pub fn grep(directory: &str, text: &str) -> Result<() , &'static str> {
                 for  (line_number, line_result) in reader.lines().enumerate() {
                         match line_result {
                                 Ok(line) => {
-                                        if line.contains(text) {
-                                                println!(" '{:?}' text found at file {:?}, at line {:?}", text, filename, line_number+1);
+                                        
+                                        if line.contains(text_chunk) {
+                                                println!(" {:?} text found at file {:?}, at line {:?}", text_chunk, filename, line_number+1);
                                         }
                                 },
                                 Err(_) => ()
@@ -162,8 +180,8 @@ pub fn grep(directory: &str, text: &str) -> Result<() , &'static str> {
                                         Ok(some) => {
                                                 if some.is_file() {
                                                         if let Some(s) = path.file_name() {
-                                                                let file_name_string = s.to_string_lossy().into_owned();
-                                                                let _ = check_file(&file_name_string, text);
+                                                                let newpath = path.to_string_lossy().into_owned();
+                                                                let _ = check_file(&newpath, text);
                                                         }
                                                 } else if some.is_dir() {
                                                         let new_path = path.to_string_lossy().into_owned();
