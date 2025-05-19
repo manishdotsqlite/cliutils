@@ -1,16 +1,16 @@
 use clap::Parser;
 
-enum tools {
+pub enum tools {
         echo(String),  // this repeats the string input
         cat(String, String), // this concatenates two files
         ls(String), // this lists directories of a folder
         find(String, String), // this locates files or directories in a directory and inside. 
-        grep(String) // this matches text in files in the root directory and inside.
+        grep(String, String) // this matches text in files in a directory and inside.
 }
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-struct Args {
+pub struct Args {
         // this takes the command 
         #[arg()]
         command: String,
@@ -20,7 +20,7 @@ struct Args {
         first_argument: String,
 
         // this takes the second string
-        #[arg()]
+        #[arg(default_value_t = String::from(""))]
         second_argument: String,
 }
 
