@@ -4,7 +4,7 @@ enum tools {
         echo(String),  // this repeats the string input
         cat(String, String), // this concatenates two files
         ls(String), // this lists directories of a folder
-        find(String), // this locates files or directories in root directory and inside. 
+        find(String, String), // this locates files or directories in a directory and inside. 
         grep(String) // this matches text in files in the root directory and inside.
 }
 
@@ -23,3 +23,7 @@ struct Args {
         #[arg()]
         second_argument: String,
 }
+
+
+
+

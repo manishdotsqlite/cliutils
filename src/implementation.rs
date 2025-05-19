@@ -45,7 +45,31 @@ fn ls(directory: &str) -> Result<(), &'static str>{
                 return Err("Path doesn't exist.")
         }
 
-        let entries = fs::read_dir(directory);
+        let entries = match fs::read_dir(directory){
+                Ok(some) => some,
+                Err(_) => return Err("Couldn't read directory.")
+        };
+
+        for entry in entries {
+                match entry {
+                        Ok(some) => {
+                                let path = some.path();
+                                match fs::metadata(&path) {
+                                        Ok(some) => {
+                                                if some.is_dir() {
+                                                        println!("Folder: {:?}", path.display())
+                                                } else if some.is_file() {
+                                                        println!("File: {:?}", path.display())
+                                                }
+                                        },
+                                        Err(_) => println!("Couldn't read metadata.")
+                                        
+                                };
+
+                        },
+                        Err(_) => ()
+                }
+        }
        
         Ok(())
 }
